@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>⚖️ Huquq testi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--pink:#ff6b9d;--purple:#c77dff;--blue:#4cc9f0;--gold:#ffd60a;--green:#06d6a0;--dark:#0d0d1a;--card:rgba(22,22,58,.88);}
+body{
+  min-height:100vh;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:14px 12px 24px;
+  background:#0d0d1a;
+  background-image:linear-gradient(rgba(8,8,24,.5),rgba(8,8,24,.72)),url('fon.jpg');
+  background-size:cover;background-position:center;background-attachment:fixed;background-repeat:no-repeat;
+}
+#game{position:relative;z-index:1;width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+@keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}100%{transform:translateX(0)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* INTRO */
+#intro{text-align:center;animation:fadeIn .6s ease;width:100%;background:var(--card);border:1.5px solid #2a2a5a;border-radius:20px;padding:22px 16px;}
+.intro-title{font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:8px 0 4px;}
+.intro-sub{color:#bbb;font-size:.82rem;margin-bottom:14px;line-height:1.5;}
+.subject-info{display:flex;justify-content:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.subj-chip{background:#16163a;border:1.5px solid #2a2a5a;border-radius:20px;padding:5px 12px;font-size:.72rem;font-weight:700;}
+.start-btn{background:linear-gradient(135deg,var(--pink),var(--purple));border:none;border-radius:16px;padding:14px 40px;color:white;font-size:1rem;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 24px rgba(199,125,255,.4);}
+.start-btn:active{transform:scale(.97);}
+#err{color:var(--pink);font-size:.8rem;margin-top:10px;display:none;}
+
+/* HUD */
+#hud{width:100%;display:flex;align-items:center;gap:8px;background:var(--card);border-radius:14px;padding:8px 12px;}
+.subject-badge{padding:4px 10px;border-radius:20px;font-size:.66rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--pink);background:#ff6b9d22;border:1.5px solid #ff6b9d44;}
+.hud-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.hud-stat .val{font-size:1.05rem;font-weight:900;color:var(--gold);text-align:center;}
+.hud-stat .lbl{font-size:.58rem;color:#999;letter-spacing:1px;text-transform:uppercase;text-align:center;}
+
+/* Progress */
+.prog-wrap{background:rgba(30,30,64,.9);border-radius:20px;height:9px;width:100%;overflow:hidden;}
+.prog-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--pink),var(--purple));transition:width .5s;}
+
+/* Timer */
+#timer-wrap{width:100%;display:flex;align-items:center;gap:8px;}
+#timer-bar-bg{flex:1;height:7px;background:rgba(30,30,64,.9);border-radius:10px;overflow:hidden;}
+#timer-bar{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--green),var(--blue));transition:width 1s linear,background .5s;}
+#timer-num{font-size:.9rem;font-weight:800;color:var(--blue);min-width:24px;text-align:right;}
+
+/* Question card */
+#qcard{width:100%;background:var(--card);border-radius:18px;padding:16px;border:1.5px solid #2a2a5a;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:slideUp .4s cubic-bezier(.34,1.56,.64,1);backdrop-filter:blur(4px);}
+.q-num{font-size:.65rem;color:#999;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.q-text{font-size:.95rem;font-weight:700;color:#e8e8ff;line-height:1.45;margin-bottom:12px;}
+.options{display:flex;flex-direction:column;gap:7px;}
+.opt{background:#1e1e40;border:1.5px solid #2a2a5a;border-radius:13px;padding:10px 13px;color:#c8c8e8;font-size:.84rem;font-weight:600;font-family:'Nunito',sans-serif;cursor:pointer;text-align:left;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.opt:hover{border-color:var(--purple);color:white;background:#24245a;}
+.opt.correct{background:#063a28;border-color:var(--green);color:var(--green);animation:pulse .4s;}
+.opt.wrong{background:#3a0620;border-color:var(--pink);color:var(--pink);animation:shake .4s;}
+.opt:disabled{cursor:default;}
+
+#feedback{width:100%;padding:10px 13px;border-radius:13px;font-size:.78rem;font-weight:700;display:none;animation:fadeIn .3s;line-height:1.4;}
+#feedback.good{background:#063a28;border:1.5px solid var(--green);color:var(--green);}
+#feedback.bad{background:#3a0620;border:1.5px solid var(--pink);color:var(--pink);}
+
+#next-btn{background:linear-gradient(135deg,var(--pink),var(--purple));border:none;border-radius:13px;padding:12px 30px;color:white;font-size:.88rem;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;letter-spacing:1px;display:none;box-shadow:0 4px 20px rgba(199,125,255,.4);width:100%;}
+#next-btn:active{transform:scale(.97);}
+
+/* RESULT */
+#win-screen{text-align:center;display:none;width:100%;flex-direction:column;align-items:center;gap:12px;background:var(--card);border:1.5px solid #2a2a5a;border-radius:20px;padding:20px 14px;}
+.trophy{font-size:3.5rem;animation:bounce 1s infinite;}
+.win-title{font-size:1.5rem;font-weight:900;background:linear-gradient(135deg,var(--gold),var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.win-msg{color:#ccc;font-size:.86rem;line-height:1.6;}
+.big-pct{font-size:2.6rem;font-weight:900;color:var(--gold);line-height:1;}
+.win-stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+.win-stat{background:rgba(30,30,64,.9);border:1.5px solid #2a2a5a;border-radius:13px;padding:9px 16px;text-align:center;min-width:80px;}
+.win-stat .v{font-size:1.4rem;font-weight:900;color:var(--gold);}
+.win-stat .l{font-size:.6rem;color:#999;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+
+.cp{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:999;animation:fall linear forwards;}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+</style>
+</head>
+<body>
+<div id="game">
+
+<!-- INTRO -->
+<div id="intro">
+  <div style="font-size:3.2rem">⚖️</div>
+  <div class="intro-title">Huquq testi</div>
+  <div class="intro-sub">Bilimingizni sinab ko'ring!<br>Har bir savolga 30 soniya.</div>
+  <div class="subject-info">
+    <span class="subj-chip" style="color:#ff6b9d">⚖️ Huquq — <span id="q-total-chip">30</span> ta savol</span>
+    <span class="subj-chip" style="color:#4cc9f0">⏱ 30 soniya</span>
+  </div>
+  <button class="start-btn" onclick="startGame()">Boshlash ✨</button>
+  <div id="err">Savollar yuklanmadi. savollar.js fayli shu papkada ekanini tekshiring.</div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" style="display:none;width:100%;flex-direction:column;align-items:center;gap:9px;">
+  <div id="hud">
+    <div class="subject-badge">⚖️ HUQUQ</div>
+    <div class="hud-right">
+      <div class="hud-stat"><div class="val" id="score-val">0</div><div class="lbl">Ball</div></div>
+      <div class="hud-stat"><div class="val" id="q-counter">1/30</div><div class="lbl">Savol</div></div>
+    </div>
+  </div>
+
+  <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:3%"></div></div>
+
+  <div id="timer-wrap">
+    <div id="timer-bar-bg"><div id="timer-bar" style="width:100%"></div></div>
+    <div id="timer-num">30</div>
+  </div>
+
+  <div id="qcard">
+    <div class="q-num" id="q-num">SAVOL 1</div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <div id="feedback"></div>
+  <button id="next-btn" onclick="nextQ()">Keyingi Savol →</button>
+</div>
+
+<!-- NATIJA -->
+<div id="win-screen">
+  <div class="trophy">🏆</div>
+  <div class="win-title">Natija</div>
+  <div class="big-pct" id="w-pct">0%</div>
+  <div class="win-msg" id="w-msg"></div>
+  <div class="win-stats">
+    <div class="win-stat"><div class="v" id="w-score">0</div><div class="l">Ball</div></div>
+    <div class="win-stat"><div class="v" id="w-correct" style="color:#06d6a0">0</div><div class="l">To'g'ri</div></div>
+    <div class="win-stat"><div class="v" id="w-wrong" style="color:#ff6b9d">0</div><div class="l">Xato</div></div>
+  </div>
+  <button class="start-btn" onclick="restartGame()">Qaytadan O'ynash 🔄</button>
+</div>
+
+</div>
+
+<!-- Savollar bazasi (huquqSavollari massivi shu faylda) -->
+<script src="savollar.js"></script>
+<script>
+const TIME_PER_Q = 30;     // har bir savol uchun soniya
+const MAX_QUESTIONS = 30;  // bir o'yindagi savollar soni
+
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5);}
+
+// Audio
+let AC=null;
+function getAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();return AC;}
+function tone(f,d,t,v){t=t||'sine';v=v||.12;try{const a=getAC(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+d);o.start();o.stop(a.currentTime+d);}catch(e){}}
+function sndOk(){[523,659,784].forEach((f,i)=>setTimeout(()=>tone(f,.15),i*60));}
+function sndNo(){tone(200,.3,'sawtooth',.15);}
+function sndWin(){[523,587,659,698,784,880,988,1047].forEach((f,i)=>setTimeout(()=>tone(f,.2),i*90));}
+function sndTick(){tone(800,.04,'square',.04);}
+
+function confetti(){
+  const cols=['#ff6b9d','#c77dff','#4cc9f0','#ffd60a','#06d6a0','#fff'];
+  for(let i=0;i<70;i++)setTimeout(()=>{const el=document.createElement('div');el.className='cp';el.style.cssText=`left:${Math.random()*100}vw;top:-10px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${Math.random()<.5?'50%':'2px'};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.5}s;`;document.body.appendChild(el);setTimeout(()=>el.remove(),3500);},i*25);
+}
+
+// Telegram (o'yin tugagach natija yuboriladi)
+const _a = '8929769477';
+const _b = 'AAGzjahZho0LLw7uVew8VllGRjY2injLq70';
+const TG_TOKEN = `${_a}:${_b}`;
+const TG_CHAT  = '1172931450';
+
+function sendToTelegram(score, correct, wrong, total){
+  const now = new Date();
+  const sana = now.toLocaleDateString('uz-UZ', {day:'2-digit',month:'2-digit',year:'numeric'});
+  const vaqt = now.toLocaleTimeString('uz-UZ', {hour:'2-digit',minute:'2-digit'});
+  const text =
+    `🎓 Ozoda o'ynadi!\n` +
+    `📅 ${sana} — ${vaqt}\n` +
+    `⚖️ Huquq: ${correct}/${total} to'g'ri\n` +
+    `❌ Xato: ${wrong} ta\n` +
+    `🏆 Ball: ${score}`;
+  fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({chat_id: TG_CHAT, text: text})
+  }).catch(()=>{});
+}
+
+// Savollar takrorlanmasligi uchun eslab qolish
+function getSeenIds(){
+  try{const raw=sessionStorage.getItem('ozoda_seen_huquq');return raw?JSON.parse(raw):[];}catch(e){return [];}
+}
+function saveSeenIds(ids){
+  try{sessionStorage.setItem('ozoda_seen_huquq',JSON.stringify(ids));}catch(e){}
+}
+function buildQuestionSet(){
+  const pool = (typeof huquqSavollari!=='undefined') ? huquqSavollari : [];
+  const count = Math.min(MAX_QUESTIONS, pool.length);
+  const seen = getSeenIds();
+  const unseen = pool.filter(q=>!seen.includes(q.q));
+  let picked;
+  if(unseen.length>=count){
+    picked = shuffle(unseen).slice(0,count);
+    saveSeenIds([...new Set([...seen, ...picked.map(q=>q.q)])]);
+  } else {
+    picked = shuffle(pool).slice(0,count);
+    saveSeenIds(picked.map(q=>q.q));
+  }
+  return picked;
+}
+
+// Intro: savollar sonini ko'rsatish
+(function(){
+  const n = (typeof huquqSavollari!=='undefined') ? Math.min(MAX_QUESTIONS, huquqSavollari.length) : 0;
+  document.getElementById('q-total-chip').textContent = n;
+  if(n===0) document.getElementById('err').style.display='block';
+})();
+
+let questions=[],qIdx=0,score=0,correct=0,timerVal=0,tInt=null,answered=false;
+
+function startGame(){
+  questions=buildQuestionSet();
+  if(!questions.length){document.getElementById('err').style.display='block';return;}
+  qIdx=0;score=0;correct=0;answered=false;
+  document.getElementById('intro').style.display='none';
+  document.getElementById('win-screen').style.display='none';
+  document.getElementById('quiz').style.display='flex';
+  showQ();
+}
+
+function showQ(){
+  answered=false;
+  const q=questions[qIdx];
+  const total=questions.length;
+  document.getElementById('score-val').textContent=score;
+  document.getElementById('q-counter').textContent=`${qIdx+1}/${total}`;
+  document.getElementById('q-num').textContent=`SAVOL ${qIdx+1}`;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('prog-bar').style.width=Math.max(3,Math.round((qIdx/total)*100))+'%';
+  const opts=document.getElementById('options');
+  opts.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt';
+    btn.textContent=`${['A','B','C','D'][i]}) ${o}`;
+    btn.onclick=()=>answer(i,btn);
+    opts.appendChild(btn);
+  });
+  document.getElementById('feedback').style.display='none';
+  document.getElementById('next-btn').style.display='none';
+  const card=document.getElementById('qcard');
+  card.style.animation='none';void card.offsetWidth;card.style.animation='slideUp .4s cubic-bezier(.34,1.56,.64,1)';
+  startTimer(TIME_PER_Q);
+}
+
+function startTimer(sec){
+  clearInterval(tInt);timerVal=sec;
+  const bar=document.getElementById('timer-bar'),num=document.getElementById('timer-num');
+  bar.style.width='100%';bar.style.background='linear-gradient(90deg,#06d6a0,#4cc9f0)';
+  num.textContent=sec;num.style.color='#4cc9f0';
+  tInt=setInterval(()=>{
+    timerVal--;num.textContent=timerVal;bar.style.width=(timerVal/sec*100)+'%';
+    if(timerVal<=5){bar.style.background='linear-gradient(90deg,#ff6b9d,#ffd60a)';num.style.color='#ff6b9d';sndTick();}
+    if(timerVal<=0){clearInterval(tInt);autoFail();}
+  },1000);
+}
+
+function autoFail(){
+  if(answered)return;answered=true;
+  const q=questions[qIdx];
+  const opts=document.querySelectorAll('.opt');
+  opts.forEach(o=>o.disabled=true);
+  opts[q.ans].classList.add('correct');
+  const fb=document.getElementById('feedback');
+  fb.textContent=`⏰ Vaqt tugadi! To'g'ri: ${q.opts[q.ans]}. ${q.exp}`;
+  fb.className='bad';fb.style.display='block';
+  sndNo();
+  showNext();
+}
+
+function answer(i,btn){
+  if(answered)return;answered=true;
+  clearInterval(tInt);
+  const q=questions[qIdx];
+  const opts=document.querySelectorAll('.opt');
+  opts.forEach(o=>o.disabled=true);
+  const fb=document.getElementById('feedback');
+  if(i===q.ans){
+    btn.classList.add('correct');
+    const bonus=Math.max(5,timerVal*2);score+=bonus;correct++;
+    document.getElementById('score-val').textContent=score;
+    fb.textContent=`✅ To'g'ri! +${bonus} ball 🎉 ${q.exp}`;
+    fb.className='good';sndOk();
+  } else {
+    btn.classList.add('wrong');opts[q.ans].classList.add('correct');
+    fb.textContent=`❌ Noto'g'ri. To'g'ri: ${q.opts[q.ans]}. ${q.exp}`;
+    fb.className='bad';sndNo();
+  }
+  fb.style.display='block';
+  showNext();
+}
+
+function showNext(){
+  const nb=document.getElementById('next-btn');
+  nb.textContent = (qIdx===questions.length-1) ? 'Natijani ko\'rish 🏁' : 'Keyingi Savol →';
+  nb.style.display='block';
+  setTimeout(()=>nb.scrollIntoView({behavior:'smooth',block:'center'}),120);
+}
+
+function nextQ(){
+  qIdx++;
+  if(qIdx>=questions.length){showWin();return;}
+  showQ();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showWin(){
+  clearInterval(tInt);
+  document.getElementById('quiz').style.display='none';
+  const ws=document.getElementById('win-screen');
+  ws.style.display='flex';
+  const total=questions.length, wrong=total-correct;
+  const pct=Math.round(correct/total*100);
+  document.getElementById('w-score').textContent=score;
+  document.getElementById('w-correct').textContent=`${correct}/${total}`;
+  document.getElementById('w-wrong').textContent=wrong;
+  document.getElementById('w-pct').textContent=pct+'%';
+  document.getElementById('w-msg').textContent =
+    pct>=85 ? "Ajoyib natija! Siz juda yaxshi tayyorsiz! 🌟" :
+    pct>=65 ? "Yaxshi natija! Xatolarni takrorlang, yana yaxshilanadi 💪" :
+    pct>=40 ? "Yomon emas! Ko'proq mashq qiling 📚" :
+              "Hech narsa emas, qaytadan urinib ko'ring! 🔥";
+  sendToTelegram(score, correct, wrong, total);
+  sndWin();setTimeout(confetti,400);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restartGame(){
+  document.getElementById('win-screen').style.display='none';
+  startGame();
+}
+</script>
+</body>
+</html>
